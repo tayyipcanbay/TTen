@@ -1,18 +1,22 @@
 from flask import Flask, request
+from tesseract_operations import tesseract_it
+from user_operations import create_user_if_not_exists
+from user_txt_operations import add_new_query
+from python_arptable import get_arp_table
 import os
-import pytesseract
 
 app= Flask(__name__)
 
-def tesseract_it(path,save_path):
-    # get image from path run tesseract on it and save the result in save_path as txt
-    if os.path.exists(path):
-        text = pytesseract.image_to_string(path)
-        with open(save_path, 'w') as f:
-            f.write(text)
-            return True
-    else:
-        return False
+def read_txt(path):
+    with open(path, 'r') as f:
+        return f.read()
+
+def get_client_mac(ip):
+    arp_table = get_arp_table()
+    for entry in arp_table:
+        if entry['IP address'] == ip:
+            return entry['HW address']
+    return None
 
 @app.route('/')
 def index():
@@ -21,13 +25,18 @@ def index():
 @app.route('/upload', methods=['POST'])
 def upload():
     files = request.files
+    sender_ip = request.remote_addr
+    sender_mac = get_client_mac(sender_ip)
+    user_id= create_user_if_not_exists(user_mac=sender_mac, user_ip=sender_ip)
+    if user_id == None:
+        return 'failed'
     for file in files:
         temp_path= os.path.join('incoming-image', files[file].filename)
         files[file].save(temp_path)
-        temp_save_path=os.path.join('outgoing-text', files[file].filename+'.txt')
-        if tesseract_it(temp_path, temp_save_path):
-            os.remove(temp_path)
-            return 'success'
+        query_txt= tesseract_it(temp_path)
+        if query_txt:
+            query_id= add_new_query(query_txt=query_txt, user_id=user_id)
+            return str(query_id)
         else:
             return 'failed'
 
