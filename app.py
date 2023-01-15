@@ -1,18 +1,15 @@
 from flask import Flask, request
 from tesseract_operations import tesseract_it
-from database_operations import create_user_if_not_exists, create_query, update_query_answer
+from database_operations import (
+    create_user_if_not_exists,
+    create_query,
+    update_query_answer,
+)
 from gpt_request import run_query
 import os
 import json
 
 app = Flask(__name__)
-#######################################
-
-
-
-
-
-#######################################
 
 
 @app.route("/")
@@ -23,14 +20,14 @@ def index():
 @app.route("/upload", methods=["POST"])
 def upload():
     if request.method == "POST":
-        f= request.files["file"]
-        token= str(request.files["token"])
+        f = request.files["file"]
+        token = str(request.files["token"])
         f.save(f.filename)
         os.remove(f.filename)
-        user_id= create_user_if_not_exists(token)
-        query_text= tesseract_it(f.filename)
-        query_id= create_query(user_id, query_text)
-        answer= run_query(query_text, token)
+        user_id = create_user_if_not_exists(token)
+        query_text = tesseract_it(f.filename)
+        query_id = create_query(user_id, query_text)
+        answer = run_query(query_text, token)
         _query_id, success = update_query_answer(query_id, answer)
         if query_id == _query_id and success:
             return answer
@@ -38,6 +35,7 @@ def upload():
             return "Error in request"
     else:
         return "Not a POST request"
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=3131, debug=True)
