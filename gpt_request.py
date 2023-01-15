@@ -29,5 +29,7 @@ def run_query(prompt=None, apiKey=None, maxTokens=5):
         apiKey = "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"
     if not prompt:
         requestBody = "whats the meaning of 31?"
+    else:
+        requestBody = prompt
     gptResponse = gptRequest(apiKey, maxTokens, requestBody)
     return returnAnswerToClient(gptResponse)

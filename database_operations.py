@@ -24,7 +24,7 @@ def find_user_by_token(token):
         for row in reader:
             if row[1] == token:
                 return row[0]
-    return None
+    return False
 
 
 def find_user_by_id(user_id):
@@ -37,7 +37,7 @@ def find_user_by_id(user_id):
 
 
 def create_user_if_not_exists(token):
-    if find_user_by_token(token) is None:
+    if find_user_by_token(token) is False:
         with open(users_db_path, "a") as file:
             writer = csv.writer(file)
             id = get_length_of_users_db() + 1
@@ -105,6 +105,3 @@ def update_query_answer(query_id, answer):
     except:
         return query_id, False
 
-
-# create_users_db()
-# create_queries_db()

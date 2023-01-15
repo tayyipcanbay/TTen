@@ -21,11 +21,12 @@ def index():
 def upload():
     if request.method == "POST":
         f = request.files["file"]
-        token = str(request.files["token"])
+        token = request.headers.get("token")
+        print(token)
         f.save(f.filename)
-        os.remove(f.filename)
         user_id = create_user_if_not_exists(token)
         query_text = tesseract_it(f.filename)
+        os.remove(f.filename)
         query_id = create_query(user_id, query_text)
         answer = run_query(query_text, token)
         _query_id, success = update_query_answer(query_id, answer)
