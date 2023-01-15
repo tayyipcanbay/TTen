@@ -1,44 +1,43 @@
 from flask import Flask, request
 from tesseract_operations import tesseract_it
-from user_operations import create_user_if_not_exists
-from user_txt_operations import add_new_query
-from python_arptable import get_arp_table
+from database_operations import create_user_if_not_exists, create_query, update_query_answer
+from gpt_request import run_query
 import os
+import json
 
-app= Flask(__name__)
+app = Flask(__name__)
+#######################################
 
-def read_txt(path):
-    with open(path, 'r') as f:
-        return f.read()
 
-def get_client_mac(ip):
-    arp_table = get_arp_table()
-    for entry in arp_table:
-        if entry['IP address'] == ip:
-            return entry['HW address']
-    return None
 
-@app.route('/')
+
+
+#######################################
+
+
+@app.route("/")
 def index():
-    return 'Hello World'
+    return "Hello World"
 
-@app.route('/upload', methods=['POST'])
+
+@app.route("/upload", methods=["POST"])
 def upload():
-    files = request.files
-    sender_ip = request.remote_addr
-    sender_mac = get_client_mac(sender_ip)
-    user_id= create_user_if_not_exists(user_mac=sender_mac, user_ip=sender_ip)
-    if user_id == None:
-        return 'failed'
-    for file in files:
-        temp_path= os.path.join('incoming-image', files[file].filename)
-        files[file].save(temp_path)
-        query_txt= tesseract_it(temp_path)
-        if query_txt:
-            query_id= add_new_query(query_txt=query_txt, user_id=user_id)
-            return str(query_id)
+    if request.method == "POST":
+        f= request.files["file"]
+        token= str(request.files["token"])
+        f.save(f.filename)
+        os.remove(f.filename)
+        user_id= create_user_if_not_exists(token)
+        query_text= tesseract_it(f.filename)
+        query_id= create_query(user_id, query_text)
+        answer= run_query(query_text, token)
+        _query_id, success = update_query_answer(query_id, answer)
+        if query_id == _query_id and success:
+            return answer
         else:
-            return 'failed'
+            return "Error in request"
+    else:
+        return "Not a POST request"
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port= 3131, debug=True)
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=3131, debug=True)
