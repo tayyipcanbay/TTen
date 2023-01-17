@@ -28,7 +28,7 @@ def upload():
         query_text = tesseract_it(f.filename)
         os.remove(f.filename)
         query_id = create_query(user_id, query_text)
-        answer = run_query(query_text, token)
+        answer, api_key = run_query(token, query_text)
         _query_id, success = update_query_answer(query_id, answer)
         if query_id == _query_id and success:
             return answer
