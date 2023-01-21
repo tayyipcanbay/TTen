@@ -1,4 +1,4 @@
-from flask import Flask, request
+from flask import Flask, request, after_this_request
 from tesseract_operations import tesseract_it
 from database_operations import (
     create_user_if_not_exists,
@@ -8,6 +8,7 @@ from database_operations import (
 from gpt_request import run_query
 import os
 import json
+import uuid
 
 app = Flask(__name__)
 
@@ -37,6 +38,15 @@ def upload():
     else:
         return "Not a POST request"
 
+@app.route("/login", methods=["POST"])
+def login():
+    mail= request.json["mail"]
+    token = request.json["token"]
+
+    if request.method == "POST":
+        user_id = create_user_if_not_exists(token, mail)
+        return json.dumps({"user_id": user_id})
+        
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=3131, debug=True)

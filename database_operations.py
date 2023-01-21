@@ -9,7 +9,7 @@ def create_users_db():
     if not os.path.exists(users_db_path):
         with open(users_db_path, "w") as file:
             writer = csv.writer(file)
-            writer.writerow(["user_id", "api_key"])
+            writer.writerow(["user_id", "api_key, mail"])
 
 
 def get_length_of_users_db():
@@ -35,17 +35,15 @@ def find_user_by_id(user_id):
                 return row[1]
     return None
 
-
-def create_user_if_not_exists(token):
+def create_user_if_not_exists(token, mail):
     if find_user_by_token(token) is False:
         with open(users_db_path, "a") as file:
             writer = csv.writer(file)
             id = get_length_of_users_db() + 1
-            writer.writerow([id, token])
+            writer.writerow([id, token, mail])
             return id
     else:
         return find_user_by_token(token)
-
 
 #################################################
 
@@ -105,3 +103,4 @@ def update_query_answer(query_id, answer):
     except:
         return query_id, False
 
+create_users_db()
