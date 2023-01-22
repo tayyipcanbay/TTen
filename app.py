@@ -41,11 +41,10 @@ def upload():
 @app.route("/login", methods=["POST"])
 def login():
     mail= request.json["mail"]
-    token = request.json["token"]
-
+    token = request.json["token"]   
     if request.method == "POST":
         user_id = create_user_if_not_exists(token, mail)
-        return json.dumps({"user_id": user_id})
+        return json.dumps({"user_id": user_id, "status":200})
         
 
 if __name__ == "__main__":
