@@ -18,25 +18,42 @@ def index():
     return "Hello World"
 
 
-@app.route("/upload", methods=["POST"])
-def upload():
+@app.route("/ask-image", methods=["POST"])
+def ask_image():
     if request.method == "POST":
-        f = request.files["file"]
-        token = request.headers.get("token")
-        print(token)
-        f.save(f.filename)
-        user_id = create_user_if_not_exists(token)
-        query_text = tesseract_it(f.filename)
-        os.remove(f.filename)
-        query_id = create_query(user_id, query_text)
-        answer, api_key = run_query(token, query_text)
-        _query_id, success = update_query_answer(query_id, answer)
-        if query_id == _query_id and success:
-            return answer
-        else:
-            return "Error in request"
+        image = request.files["image"]
+        query= request.json["query"]
+        user = query["user"]
+        user_id = user["id"]
+        user_token = user["token"]
+        user_mail = user["mail"]
+        prompt = query["prompt"]
+        image_name = str(uuid.uuid4()) + ".jpg"
+        image.save(os.path.join("images", image_name))
+        text = tesseract_it(image_name)
+        answer = run_query(user_token, text)
+        query_id = create_query(user_id, text, answer)
+        return json.dumps({"query_id": query_id, "status":200})
     else:
-        return "Not a POST request"
+        return json.dumps({"status":400})
+
+
+
+@app.route("/ask-text", methods=["POST"])
+def ask_text():
+    if request.method == "POST":
+        query= request.json["query"]
+        user = query["user"]
+        user_id = user["id"]
+        user_token = user["token"]
+        user_mail = user["mail"]
+        prompt = query["prompt"]
+        answer = run_query(user_token, prompt)
+        query_id = create_query(user_id, prompt, answer)
+        return json.dumps({"query_id": query_id, "status":200})
+    else:
+        return json.dumps({"status":400})
+
 
 @app.route("/login", methods=["POST"])
 def login():
