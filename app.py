@@ -22,7 +22,7 @@ def index():
 def ask_image():
     if request.method == "POST":
         image = request.files["image"]
-        query= request.json["query"]
+        query= request.json
         user = query["user"]
         user_id = user["id"]
         user_token = user["token"]
@@ -33,7 +33,7 @@ def ask_image():
         text = tesseract_it(image_name)
         answer = run_query(user_token, text)
         query_id = create_query(user_id, text, answer)
-        return json.dumps({"query_id": query_id, "status":200})
+        return json.dumps({"query_id": query_id,"answer":answer, "status":200})
     else:
         return json.dumps({"status":400})
 
@@ -42,7 +42,7 @@ def ask_image():
 @app.route("/ask-text", methods=["POST"])
 def ask_text():
     if request.method == "POST":
-        query= request.json["query"]
+        query= request.json
         user = query["user"]
         user_id = user["id"]
         user_token = user["token"]
@@ -50,7 +50,7 @@ def ask_text():
         prompt = query["prompt"]
         answer = run_query(user_token, prompt)
         query_id = create_query(user_id, prompt, answer)
-        return json.dumps({"query_id": query_id, "status":200})
+        return json.dumps({"query_id": query_id,"answer":answer, "status":200})
     else:
         return json.dumps({"status":400})
 
