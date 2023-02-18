@@ -21,19 +21,20 @@ def index():
 @app.route("/ask-image", methods=["POST"])
 def ask_image():
     if request.method == "POST":
-        image = request.files["image"]
-        query= request.json
-        user = query["user"]
-        user_id = user["id"]
-        user_token = user["token"]
-        user_mail = user["mail"]
-        prompt = query["prompt"]
-        image_name = str(uuid.uuid4()) + ".jpg"
-        image.save(os.path.join("images", image_name))
-        text = tesseract_it(image_name)
-        answer = run_query(user_token, text)
-        query_id = create_query(user_id, text, answer)
-        return json.dumps({"query_id": query_id,"answer":answer, "status":200})
+        image = request.files["prompt"]
+        
+        # query= request.json
+        # user = query["user"]
+        # user_id = user["id"]
+        # user_token = user["token"]
+        # user_mail = user["mail"]
+        # prompt = query["prompt"]
+        # image_name = str(uuid.uuid4()) + ".jpg"
+        # image.save(os.path.join("images", image_name))
+        # text = tesseract_it(image_name)
+        # answer = run_query(user_token, text)
+        # query_id = create_query(user_id, text, answer)
+        # return json.dumps({"query_id": query_id,"answer":answer, "status":200})
     else:
         return json.dumps({"status":400})
 
